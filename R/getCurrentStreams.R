@@ -1,12 +1,13 @@
 #' Title
 #'
-#' @param clientID
+#' @param clientID Twitch API client key (str)
 #' @param game_id
 #'
-#' @return
+#' @return a dataframe of recent streams for given game id
 #' @export
 #'
 #' @examples
+
 getCurrentStreams <- function(clientID, game_id){
   h <- curl::new_handle()
   curl::handle_setopt(h, verbose = TRUE)
