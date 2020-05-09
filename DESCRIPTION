@@ -14,4 +14,5 @@ Suggests:
 RoxygenNote: 7.1.0.9000
 Imports:
         curl (>= 4.3),
-        magrittr (>= 1.5)
+        magrittr (>= 1.5),
+        dplyr (>= 0.8.5)
