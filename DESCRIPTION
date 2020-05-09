@@ -13,5 +13,5 @@ Suggests:
     testthat
 RoxygenNote: 7.1.0.9000
 Imports:
-        curl,
-        magrittr
+        curl (>= 4.3),
+        magrittr (>= 1.5)
