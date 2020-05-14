@@ -9,15 +9,15 @@
 #' @examples
 #' getTopGameIDs('api_key', 10)
 
-getTopGameIDs <- function(clientID, numGames = 100){
+getTopGameIDs <- function(clientID, access_token, numGames = 100){
   curr_timestamp <- Sys.time()
-
   # Define handle for Twitch API
   h <- curl::new_handle()
   curl::handle_setopt(h, verbose = TRUE)
   curl::handle_setheaders(h, .list = list(
     'Accept' = 'application/json',
-    'Client-ID' = clientID)
+    'Client-ID' = clientID,
+    'Authorization' = paste0('Bearer ', access_token))
   )
 
   # Retrieve results from Twitch

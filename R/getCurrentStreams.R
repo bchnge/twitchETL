@@ -13,7 +13,8 @@ getCurrentStreams <- function(clientID, game_id){
   curl::handle_setopt(h, verbose = TRUE)
   curl::handle_setheaders(h, .list = list(
     'Accept' = 'application/json',
-    'Client-ID' = clientID)
+    'Client-ID' = clientID,
+    'Authorization' = paste0('Bearer ', access_token))
   )
 
   req = curl::curl_fetch_memory(paste0('https://api.twitch.tv/helix/streams?game_id=', game_id,'&first=100'),
