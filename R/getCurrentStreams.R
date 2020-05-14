@@ -8,7 +8,7 @@
 #'
 #' @examples
 
-getCurrentStreams <- function(clientID, game_id){
+getCurrentStreams <- function(clientID, access_token, game_id){
   h <- curl::new_handle()
   curl::handle_setopt(h, verbose = TRUE)
   curl::handle_setheaders(h, .list = list(
