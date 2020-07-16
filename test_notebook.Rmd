@@ -1,0 +1,94 @@
+---
+title: "Analyzing Twitch data using the twitchETL package"
+author: "Ben Cheng"
+date: '2020-07-16'
+editor_options:
+  chunk_output_type: inline
+slug: analyzing-twitch-data
+tags: []
+categories: []
+---
+
+### Retrieving top games using the twitchETL package:
+```{r, eval = F, include = T, message = F, code = readLines("twitch_viewcount_job.R")}
+```
+
+
+### A brief analysis of Twitch data
+```{r, include=T, message = F}
+options(warn = -1) 
+
+require(RMySQL)
+require(dplyr)
+require(ggplot2)
+require(ggdark)
+require(ggiraph)
+require(stringr)
+require(lubridate)
+require(highcharter)
+
+# db_permissions.Rdata should contain the following environment variables:
+## host: 'xxx.xxx.xx.xx'
+## dbname: 'abc'
+## user: def'
+## password: 'ghi'
+
+#save(host, dbname, user, password, file = 'db_permissions.Rdata')
+load('db_permissions.Rdata') # permissions loaded from a local SQL database
+
+conn <- dbConnect(MySQL(), host = host, dbname = 'twitch',  user = user, password = password)
+#dbListTables(conn)
+
+# Aggregate ranking of games as of latest pull of all time
+df <- tbl(conn, 'snapshots') %>%
+   group_by(game_name) %>%
+   summarise(viewer_count = sum(viewer_count)) %>% 
+   collect
+
+# Daily snapshots of average views
+df2 <- tbl(conn, 'snapshots') %>%
+  collect %>%
+  mutate(Period = ceiling_date(as_datetime(pull_timestamp), unit = 'days')) %>%
+  group_by(game_name, Period) %>%
+  summarise(viewer_count = mean(viewer_count))
+DT::datatable(df)
+```
+
+
+#### Overall popularity of all time since May
+Note: multiple views per hour will be counted multiple times.
+```{r, fig.height = 8, out.width='100%', message = F}
+g <- ggplot(df, aes(x = reorder(game_name, viewer_count), y = viewer_count)) + 
+  geom_bar_interactive(stat = 'identity', aes(tooltip = viewer_count, data_id = str_replace_all(game_name, "'", ""))) + 
+  xlab('') + ylab('Total Viewer Count') + 
+  labs(caption = 'Source: databasement.org; Twitch API') +
+  ggtitle('Most viewed games on Twitch since May') +
+  coord_flip() + 
+  dark_theme_minimal() + 
+  theme(text = element_text(size = 9), 
+        plot.title.position = 'plot',
+        plot.caption.position = 'plot',
+        plot.caption = element_text(size = 6, hjust = 0)) 
+ggiraph::ggiraph(ggobj = g, height_svg = 8)
+```
+
+#### Popularity over time
+Note: multiple views per hour will be counted multiple times.
+```{r, fig.height = 15, out.width='100%', message = F}
+g <- ggplot(df2 %>% filter(Period >= '2020-05-15'), aes(x = Period, y = reorder(game_name, viewer_count))) + 
+  geom_tile_interactive(aes(fill = log(viewer_count), tooltip = viewer_count, data_id = Period)) + 
+  xlab('') + ylab('Average views per day') + 
+  labs(caption = 'Source: databasement.org; Twitch API') +
+  ggtitle('Twitch views over time') +
+  dark_theme_minimal() + 
+  theme(text = element_text(size = 9), 
+        plot.title.position = 'plot',
+        plot.caption.position = 'plot',
+        plot.caption = element_text(size = 6, hjust = 0)) +
+  scale_fill_viridis_c_interactive('total views per day', option = 'inferno') +
+  theme(legend.position = 'hidden')
+gg <- ggiraph::ggiraph(ggobj = g, height_svg = 12)
+gg <- girafe_options(gg, opts_toolbar(position = 'top'))
+gg
+
+```
