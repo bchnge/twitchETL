@@ -8,6 +8,7 @@ slug: analyzing-twitch-data
 tags: []
 categories: []
 ---
+### Code base for twitchETL and this example can be found on [GitHub](https://github.com/bchnge/twitchETL)
 
 ### Retrieving top games using the twitchETL package:
 ```{r, eval = F, include = T, message = F, code = readLines("twitch_viewcount_job.R")}
